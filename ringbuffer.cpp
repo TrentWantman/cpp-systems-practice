@@ -1,13 +1,3 @@
-// Implement a RingBuffer class with fixed capacity. No dynamic allocation after construction. This is how software stores the last N sensor readings without ever calling new in the hot path.
-// Requirements:
-
-// Constructor takes a capacity
-// push(double value) - add a value. If full, overwrite the oldest
-// pop() - remove and return the oldest value
-// isEmpty() and isFull() - status checks
-// All operations O(1)
-// No dynamic allocation after construction
-
 #include <iostream>
 using namespace std;
 
@@ -54,25 +44,3 @@ public:
     }
     
 };
-
-int main(){
-    RingBuffer rb(3);
-    rb.push(1.0);
-    rb.push(3.0);
-    rb.push(2.0);
-    rb.push(2.0);
-    rb.push(1.0);
-    rb.push(2.0);
-    rb.push(3.0);
-
-    for (int i = 0; i < rb.capacity_; i++ ){
-        cout << rb.buffer[i] << endl;
-    }
-    cout << "\n" << endl;
-    cout << "Head to tail" << endl;
-    cout << "\n" << endl;
-    cout << rb.pop() << endl;
-    cout << rb.pop() << endl;
-    cout << rb.pop() << endl;
-    cout << rb.pop() << endl;
-}
