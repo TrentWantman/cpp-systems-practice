@@ -15,6 +15,10 @@ public:
         printf("(%f, %f, %f)\n", x, y, z);
     }
 
+    float getX() const { return x; }
+    float getY() const { return y; }
+    float getZ() const { return z; }
+
     Vec3 Normalize() const {
         float magnitude = Magnitude();
         return Vec3((x / magnitude), (y / magnitude), (z / magnitude));

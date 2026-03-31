@@ -1,7 +1,7 @@
 #ifndef SENSORUNIT_H
 #define SENSORUNIT_H
 
-#include "RingBuffer.h"
+#include "DoubleCircularBuffer.h"
 #include <thread>
 #include <iostream>
 #include <string>
@@ -11,14 +11,14 @@
 class SensorUnit {
 public:
     std::string name;
-    RingBuffer buffer;
+    DoubleCircularBuffer& buffer;
     float s1_, s2_, s3_;
     bool faulted = false;
     bool stopped = false;
     float latestVote_;
     std::mutex mtx_;
 
-    SensorUnit(const std::string& name) : name(name), buffer(10),  faulted(false), latestVote_(0.0) {}
+    SensorUnit(const std::string& name_, DoubleCircularBuffer& buffer_) : name(name_), buffer(buffer_),  faulted(false), latestVote_(0.0) {}
 
     float noise() {
         return ((rand() % 100) - 50) * 0.01;
@@ -48,7 +48,7 @@ public:
             std::cout << "WARNING: Sensor Unit Is Faulty: sensor 1: " << s1_ << " sensor 2: " << s2_ << " sensor 3: " << s3_ << std::endl;
             return -999999.9;
         }
-        buffer.push(vote);
+        buffer.write(vote);
         return vote;
     }
 
@@ -57,7 +57,10 @@ public:
     void run() {
         int cycle = 0;
         while (!stopped) {
-            float base = 1000.0 + cycle * 10.0;
+            float base;
+            if (!buffer.read(base)){
+                continue;
+            }
         {
             std::lock_guard<std::mutex> lock(mtx_);
             latestVote_ = update(base + noise(), base + noise(), base + noise());
