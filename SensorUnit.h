@@ -1,21 +1,27 @@
-#include "RingBuffer.cpp"
+#ifndef SENSORUNIT_H
+#define SENSORUNIT_H
+
+#include "RingBuffer.h"
 #include <thread>
 #include <iostream>
-using namespace std;
+#include <string>
+#include <mutex>
+#include <cstdlib>
+
 class SensorUnit {
 public:
-    string name;
+    std::string name;
     RingBuffer buffer;
-    double s1_, s2_, s3_; //three redundant sensors
+    double s1_, s2_, s3_;
     bool faulted = false;
     bool stopped = false;
     double latestVote_;
-    mutex mtx_;
+    std::mutex mtx_;
 
-    SensorUnit(const string& name) : name(name), buffer(10),  faulted(false), latestVote_(0.0) {}
+    SensorUnit(const std::string& name) : name(name), buffer(10),  faulted(false), latestVote_(0.0) {}
 
     double noise() {
-        return ((rand() % 100) - 50) * 0.01;  // random value between -0.5 and 0.5
+        return ((rand() % 100) - 50) * 0.01;
     }
 
     double update(double s1, double s2, double s3){
@@ -39,7 +45,7 @@ public:
         }
         else{
             faulted = true;
-            cout << "WARNING: Sensor Unit Is Faulty: sensor 1: " << s1_ << " sensor 2: " << s2_ << " sensor 3: " << s3_ << endl;
+            std::cout << "WARNING: Sensor Unit Is Faulty: sensor 1: " << s1_ << " sensor 2: " << s2_ << " sensor 3: " << s3_ << std::endl;
             return -999999.9;
         }
         buffer.push(vote);
@@ -49,22 +55,22 @@ public:
     bool isFaulted() {return faulted;}
 
     void run() {
-        // runs on its own thread, continuously updates
         int cycle = 0;
         while (!stopped) {
-            // read from hardware (simulated)
-            double base = 1000.0 + cycle * 10.0; //altitude increasing
+            double base = 1000.0 + cycle * 10.0;
         {
-            lock_guard<mutex> lock(mtx_);
+            std::lock_guard<std::mutex> lock(mtx_);
             latestVote_ = update(base + noise(), base + noise(), base + noise());
         }
             cycle++;
-            this_thread::sleep_until(chrono::steady_clock::now() + chrono::milliseconds(50)); //reads at 20hz
+            std::this_thread::sleep_until(std::chrono::steady_clock::now() + std::chrono::milliseconds(50));
         }
     }
 
     double getLatestVote() {
-        lock_guard<mutex> lock(mtx_);
+        std::lock_guard<std::mutex> lock(mtx_);
         return latestVote_;
     }
 };
+
+#endif

@@ -1,10 +1,16 @@
+#ifndef LAUNCHSEQUENCE_H
+#define LAUNCHSEQUENCE_H
+
 #include <unordered_set>
 #include <unordered_map>
+#include <string>
+#include <iostream>
+
 class LaunchSequence{
 public:
     enum State {IDLE, PRELAUNCH, IGNITION, LIFTOFF, MAX_Q, MECO, LANDING, SAFED, ABORT};
     State currentState;
-    unordered_map<int, unordered_set<int>> transitions;
+    std::unordered_map<int, std::unordered_set<int>> transitions;
 
     LaunchSequence() {
         transitions[IDLE] = {PRELAUNCH, ABORT};
@@ -21,16 +27,16 @@ public:
 
     void transition(State nextState){
         if (transitions[currentState].count(nextState)){
-            string prevState = stateName(currentState);
+            std::string prevState = stateName(currentState);
             currentState = nextState;
-            cout << "SUCCESS: State transitioned - " << prevState << " -> " << stateName(currentState) << endl; 
+            std::cout << "SUCCESS: State transitioned - " << prevState << " -> " << stateName(currentState) << std::endl; 
         }
         else{
-            cout << "ERROR: Not a valid state transition - " << stateName(currentState) << " -> " << stateName(nextState) << endl; 
+            std::cout << "ERROR: Not a valid state transition - " << stateName(currentState) << " -> " << stateName(nextState) << std::endl; 
         }
     }
 
-    string stateName(State s){
+    std::string stateName(State s){
         switch (s) {
             case IDLE : return "IDLE";
             case PRELAUNCH : return "PRELAUNCH";
@@ -45,7 +51,9 @@ public:
         }
     }
 
-    string getState(){
+    std::string getState(){
         return stateName(currentState);
     }
 };
+
+#endif

@@ -1,0 +1,4 @@
+flight_sim
+*.o
+*.out
+.DS_Store

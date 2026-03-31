@@ -1,5 +1,7 @@
-#include <iostream>
-using namespace std;
+#ifndef DOUBLECIRCULARBUFFER_H
+#define DOUBLECIRCULARBUFFER_H
+
+#include <algorithm>
 
 class DoubleCircularBuffer{
 public:
@@ -30,11 +32,13 @@ public:
         return true;
     }
 
-    bool swapBuffers(){
+    void swapBuffers(){
         writeCount = writeHead;
         writeHead = 0;
         readHead = 0;
-        swap(writer, reader);
+        std::swap(writer, reader);
     }
 
 };
+
+#endif

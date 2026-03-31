@@ -1,5 +1,7 @@
+#ifndef RINGBUFFER_H
+#define RINGBUFFER_H
+
 #include <iostream>
-using namespace std;
 
 class RingBuffer{
 public:
@@ -35,7 +37,7 @@ public:
     }
 
     double pop(){
-        if(isEmpty()){ cout << "Buffer is empty" << endl; return -1;}
+        if(isEmpty()){ std::cout << "Buffer is empty" << std::endl; return -1;}
         else{ count_--;}
         double temp = buffer[head];
         buffer[head] = 0;
@@ -44,3 +46,5 @@ public:
     }
     
 };
+
+#endif

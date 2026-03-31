@@ -1,4 +1,5 @@
-#include "FlightComputer.cpp"
+#include "FlightComputer.h"
+
 int main() {
     FlightComputer fc;
     // fc.run();
