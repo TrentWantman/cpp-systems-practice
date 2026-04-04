@@ -16,7 +16,16 @@ public:
     Mat3x3(float m0, float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8)
     : m{m0, m1, m2, m3, m4, m5, m6, m7, m8} {}
 
-    Mat3x3 Transpose(){
+    Mat3x3 operator*(const Mat3x3& other) const { return Multiply(other); }
+    Vec3 operator*(const Vec3& v) const { return Multiply(v); }
+
+    void Print() const {
+        printf("%f %f %f\n", m[0], m[1], m[2]);
+        printf("%f %f %f\n", m[3], m[4], m[5]);
+        printf("%f %f %f\n", m[6], m[7], m[8]);
+    } 
+
+    Mat3x3 Transpose() const {
         return Mat3x3(
             m[0], m[3], m[6],
             m[1], m[4], m[7],
@@ -24,11 +33,11 @@ public:
         );
     }
 
-    float Determinant(){
+    float Determinant() const {
         return (m[0] * (m[4] * m[8] - m[5]*m[7])) - (m[1] * (m[3] * m[8] - m[5]*m[6])) + (m[2] * (m[3] * m[7] - m[4]*m[6]));
     }
 
-    Mat3x3 Multiply(Mat3x3 other){
+    Mat3x3 Multiply(const Mat3x3& other) const {
         Vec3 col0 = Multiply(Vec3(other.m[0], other.m[3], other.m[6]));
         Vec3 col1 = Multiply(Vec3(other.m[1], other.m[4], other.m[7]));
         Vec3 col2 = Multiply(Vec3(other.m[2], other.m[5], other.m[8]));
@@ -39,7 +48,7 @@ public:
         );
     }
 
-    Vec3 Multiply(Vec3 v){
+    Vec3 Multiply(const Vec3& v) const {
         return Vec3(
             (v.getX() * m[0] + v.getY() * m[1] + v.getZ() * m[2]), //x
             (v.getX() * m[3] + v.getY() * m[4] + v.getZ() * m[5]), //y
@@ -77,13 +86,6 @@ public:
             0, 0, 1
 
         );
-    }
-
-    void Print(){
-        printf("%f %f %f\n", m[0], m[1], m[2]);
-        printf("%f %f %f\n", m[3], m[4], m[5]);
-        printf("%f %f %f\n", m[6], m[7], m[8]);
-    }   
-
+    }  
 };
 #endif
