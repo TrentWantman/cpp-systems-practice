@@ -3,9 +3,12 @@
 
 #include "LaunchSequence.h"
 #include "DoubleCircularBuffer.h"
+#include "PID.h"
 #include <chrono>
 #include <thread>
 #include <iostream>
+#include <algorithm>
+
 
 class FlightComputer {
 private:
@@ -14,15 +17,17 @@ private:
     DoubleCircularBuffer& commandBuffer;
     LaunchSequence ls;
     static constexpr float dt = 0.1f;
+    PID landingPID;
+
 
 public:
     bool stopped = false;
 
     FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd)
-        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd) {}
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.01f, 0.0f, 0.0f) {}
 
     FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, LaunchSequence::State startState)
-        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd) { 
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.02f, 0.0f, 0.0f) { 
             ls.setState(startState);
         }
 
@@ -87,11 +92,18 @@ public:
                     ls.transition(ls.SAFED);
                     setThrottle(0.0f);
                 }
-                else if (velocity < -5.0f) {
-                    setThrottle(1.0f);
-                }
-                else {
-                    setThrottle(0.68f);
+                else if (ls.getState() == "LANDING") {
+                    if (alt <= 0.0) {
+                        ls.transition(ls.SAFED);
+                        setThrottle(0.0f);
+                    }
+                    else {
+                        float targetVel = -0.05f * alt - 1.0f;
+                        float throttle = 0.7f + landingPID.Compute(targetVel, velocity, dt);
+                        if (throttle > 1.0f) throttle = 1.0f;
+                        if (throttle < 0.0f) throttle = 0.0f;                   
+                        setThrottle(throttle);
+                    }
                 }
             }
             auto end = std::chrono::steady_clock::now();
