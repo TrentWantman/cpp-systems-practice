@@ -13,6 +13,12 @@ private:
     Vec3 velocity;
     Engine engine;
 
+    void Rotate(const Mat3x3& rotation) {
+        orientation = rotation * orientation;
+    }
+
+    void SetThrottle(float t) { engine.SetThrottle(t); }
+
 public:
     Rocket() : orientation(), mass(5000000.0f), forward(0,0,1), position(0,0,0), velocity(0,0,0), engine() {}
 
@@ -24,12 +30,11 @@ public:
         position = position + velocity * dt;
     }
 
-    void Rotate(const Mat3x3& rotation) {
-        orientation = rotation * orientation;
-    }
-
-    void SetThrottle(float t) { engine.SetThrottle(t); }
     float GetMass() const { return mass; }
+
+    Vec3 GetPosition() const { return position; }
+    
+    Vec3 GetVelocity() const { return velocity; }
 
     void Print() const {
         printf("Rocket State\n");

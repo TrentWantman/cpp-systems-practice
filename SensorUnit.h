@@ -1,7 +1,7 @@
 #ifndef SENSORUNIT_H
 #define SENSORUNIT_H
 
-#include "PhysicsModel.h"
+#include "Rocket.h"
 #include "DoubleCircularBuffer.h"
 #include <thread>
 #include <iostream>
@@ -11,7 +11,7 @@
 
 class SensorUnit {
 private:
-    PhysicsModel& model;
+    const Rocket& rocket;
     float dt = 0.1f;
 
 public:
@@ -30,7 +30,7 @@ public:
 
     std::mutex mtx_;
 
-    SensorUnit(const std::string& name_, DoubleCircularBuffer& buffer_, PhysicsModel& model_, int sensortype_) : name(name_), buffer(buffer_),  faulted(false), latestVote_(0.0), model(model_), sensortype(sensortype_) {}
+    SensorUnit(const std::string& name_, DoubleCircularBuffer& buffer_, const Rocket& rocket_, int sensortype_) : name(name_), buffer(buffer_),  faulted(false), latestVote_(0.0), rocket(rocket_), sensortype(sensortype_) {}
 
     float noise() {
         return ((rand() % 100) - 50) * 0.01;
@@ -66,15 +66,9 @@ public:
     void run() {
         int cycle = 0;
         while (!stopped) {
-            model.Update(dt);
             float value;
-            if(sensortype == 0){
-                value = model.GetPosition().getZ();
-            }
-            else{
-                value = model.GetVelocity().getZ();
-
-            }
+            if (sensortype == 0) value = rocket.GetPosition().getZ();
+            else value = rocket.GetVelocity().getZ();
             
         {
             std::lock_guard<std::mutex> lock(mtx_);
