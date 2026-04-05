@@ -3,15 +3,17 @@
 
 #include "Mat3x3.h"
 #include "Engine.h"
+#include "FuelTank.h"
 
 class Rocket {
 private:
+    float dryMass;
     Mat3x3 orientation;
-    float mass;
     Vec3 forward;
     Vec3 position;
     Vec3 velocity;
-    Engine& engine;
+    FuelTank fuelTank;
+    Engine engine;
 
     void Rotate(const Mat3x3& rotation) {
         orientation = rotation * orientation;
@@ -20,17 +22,20 @@ private:
     void SetThrottle(float t) { engine.SetThrottle(t); }
 
 public:
-    Rocket(Engine& engine_) : orientation(), mass(5000000.0f), forward(0,0,1), position(0,0,0), velocity(0,0,0), engine(engine_) {}
+    Rocket(DoubleCircularBuffer& cmdBuffer) 
+        : orientation(), dryMass(1200000.0f), forward(0,0,1), 
+          position(0,0,0), velocity(0,0,0), 
+          fuelTank(), engine(cmdBuffer, fuelTank) {}
     
-    Rocket(Engine& eng, float startAlt, float startVel) 
-    : orientation(), mass(5000000.0f), forward(0,0,1), 
-      position(0,0,startAlt), velocity(0,0,startVel), engine(eng) {}
+    Rocket(DoubleCircularBuffer& cmdBuffer, float throttle_, float fuel_, float startAlt, float startVel) 
+    : orientation(), dryMass(1200000.0f), forward(0,0,1), 
+      position(0,0,startAlt), velocity(0,0,startVel), fuelTank(fuel_), engine(cmdBuffer, fuelTank, throttle_) {}
 
     void Update(Vec3 externalForces, float dt) {
-        engine.ReadCommands();
+        engine.Update(dt);
         Vec3 thrustDirection = orientation * forward;
         Vec3 thrustForce = thrustDirection * engine.GetThrust();
-        Vec3 acceleration = (thrustForce + externalForces) * (1.0f / mass);
+        Vec3 acceleration = (thrustForce + externalForces) * (1.0f / (dryMass + fuelTank.GetFuel()));
         velocity = velocity + acceleration * dt;
         position = position + velocity * dt;
 
@@ -42,7 +47,9 @@ public:
         }
     }
 
-    float GetMass() const { return mass; }
+    float GetMass() const { return dryMass + fuelTank.GetFuel(); }
+
+    float GetFuel() const { return fuelTank.GetFuel(); }
 
     Vec3 GetPosition() const { return position; }
 
@@ -54,12 +61,15 @@ public:
         position.Print();
         printf("Velocity: ");
         velocity.Print();
-        printf("Mass: %f\n", mass);
         printf("Throttle: %f\n", engine.GetThrottle());
+        printf("Fuel: %f kg\n", fuelTank.GetFuel());
+        printf("Burn Rate: %f kg/s\n", engine.GetBurnRate());
+        printf("Mass: %f\n", dryMass + fuelTank.GetFuel());
         printf("Thrust Direction: ");
         (orientation * forward).Print();
         printf("Orientation:\n");
         orientation.Print();
+        printf("\n");
         printf("\n");
     }
 };

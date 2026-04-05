@@ -8,6 +8,8 @@ private:
 
 public:
     FuelTank() : fuel(CAPACITY){}
+    
+    FuelTank(float fuel_) : fuel(fuel_){}
 
     float GetFuel() const { return fuel; }
 

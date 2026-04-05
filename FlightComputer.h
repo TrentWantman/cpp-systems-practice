@@ -15,6 +15,7 @@ private:
     DoubleCircularBuffer& altBuffer;
     DoubleCircularBuffer& velBuffer;
     DoubleCircularBuffer& commandBuffer;
+    DoubleCircularBuffer& massBuffer;
     LaunchSequence ls;
     static constexpr float dt = 0.1f;
     PID landingPID;
@@ -23,11 +24,11 @@ private:
 public:
     bool stopped = false;
 
-    FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd)
-        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.02f, 0.0f, 0.0f) {}
+    FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, DoubleCircularBuffer& mass)
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), massBuffer(mass), landingPID(0.02f, 0.0f, 0.0f) {}
 
-    FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, LaunchSequence::State startState)
-        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.02f, 0.0f, 0.0f) { 
+    FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, DoubleCircularBuffer& mass, LaunchSequence::State startState)
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), massBuffer(mass), landingPID(0.02f, 0.0f, 0.0f) { 
             ls.setState(startState);
         }
 
@@ -45,6 +46,12 @@ public:
     float readVelocity() {
         float val;
         if (velBuffer.read(val)) return val;
+        return 0.0f;
+    }
+
+    float readMass() {
+        float val;
+        if (massBuffer.read(val)) return val;
         return 0.0f;
     }
 
@@ -68,6 +75,7 @@ public:
 
             float alt = readAltitude();
             float velocity = readVelocity();
+            float mass = readMass();
 
             if (ls.getState() == "LIFTOFF") {
                 if (alt >= 1200.0) {
@@ -94,7 +102,8 @@ public:
                 }
                 else {
                     float targetVel = -0.05f * alt - 1.0f;
-                    float throttle = 0.7f + landingPID.Compute(targetVel, velocity, dt);
+                    float hoverThrottle = (9.8 * mass) / 70000000;
+                    float throttle = hoverThrottle + landingPID.Compute(targetVel, velocity, dt);
                     if (throttle > 1.0f) throttle = 1.0f;
                     if (throttle < 0.0f) throttle = 0.0f;                   
                     setThrottle(throttle);
@@ -113,6 +122,7 @@ public:
                     << " Altitude: " << alt << "ft"
                     << " Velocity: " << velocity << "ft/sec"
                     << " Throttle: " << commandBuffer.reader[0]
+                    << " Mass: " << mass
                     << " work=" << elapsed.count() << "ms total=" << totalCycle.count() << "ms" << std::endl;
             }
 

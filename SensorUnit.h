@@ -68,7 +68,8 @@ public:
         while (!stopped) {
             float value;
             if (sensortype == 0) value = rocket.GetPosition().getZ();
-            else value = rocket.GetVelocity().getZ();
+            else if (sensortype == 1) value = rocket.GetVelocity().getZ();
+            else if (sensortype == 2) value = rocket.GetMass();
             
         {
             std::lock_guard<std::mutex> lock(mtx_);
