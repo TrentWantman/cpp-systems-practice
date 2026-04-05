@@ -1,4 +1,5 @@
 #include "FlightComputer.h"
+#include "LaunchSequence.h"
 #include "World.h"
 #include "SensorUnit.h"
 #include "Rocket.h"
@@ -9,15 +10,28 @@
 using namespace std;
 
 int main() {
+    //Full Launch Test
+    // World world;
+    // DoubleCircularBuffer velocityBuffer;
+    // DoubleCircularBuffer altitudeBuffer;
+    // DoubleCircularBuffer engineCommandBuffer;
+    // Engine engine(engineCommandBuffer);
+    // Rocket rocket(engine);
+    // SensorUnit altitudeSensors("SU-10-ALT", altitudeBuffer, rocket, 0);
+    // SensorUnit velocitySensors("SU-10-VEL", velocityBuffer, rocket, 1);
+    // FlightComputer fc(altitudeBuffer, velocityBuffer, engineCommandBuffer);
+
+    //Meco->Landing Test
     World world;
     DoubleCircularBuffer velocityBuffer;
     DoubleCircularBuffer altitudeBuffer;
     DoubleCircularBuffer engineCommandBuffer;
     Engine engine(engineCommandBuffer);
-    Rocket rocket(engine);
+    engine.SetThrottle(0.0f);
+    Rocket rocket(engine, 1008.85f, -111.211f);
     SensorUnit altitudeSensors("SU-10-ALT", altitudeBuffer, rocket, 0);
     SensorUnit velocitySensors("SU-10-VEL", velocityBuffer, rocket, 1);
-    FlightComputer fc(altitudeBuffer, velocityBuffer, engineCommandBuffer);
+    FlightComputer fc(altitudeBuffer, velocityBuffer, engineCommandBuffer, LaunchSequence::MECO);
 
     std::thread altThread(&SensorUnit::run, &altitudeSensors);
     std::thread velThread(&SensorUnit::run, &velocitySensors);

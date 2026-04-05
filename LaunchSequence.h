@@ -51,6 +51,10 @@ public:
         }
     }
 
+    void setState(State s) {
+        currentState = s;
+    }
+
     std::string getState(){
         return stateName(currentState);
     }

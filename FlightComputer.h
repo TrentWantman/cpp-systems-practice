@@ -21,6 +21,11 @@ public:
     FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd)
         : altBuffer(alt), velBuffer(vel), commandBuffer(cmd) {}
 
+    FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, LaunchSequence::State startState)
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd) { 
+            ls.setState(startState);
+        }
+
     void setThrottle(float throttle) {
         commandBuffer.write(throttle);
         commandBuffer.swapBuffers();
@@ -43,11 +48,13 @@ public:
         auto startAllCycles = std::chrono::steady_clock::now();
         auto start = startAllCycles;
 
-        ls.transition(ls.PRELAUNCH);
-        ls.transition(ls.IGNITION);
-        ls.transition(ls.LIFTOFF);
+        if (ls.getState() == "IDLE"){
+            ls.transition(ls.PRELAUNCH);
+            ls.transition(ls.IGNITION);
+            ls.transition(ls.LIFTOFF);
 
-        setThrottle(0.95f);
+            setThrottle(0.95f);
+        }
 
         int cycle = 0;
 
