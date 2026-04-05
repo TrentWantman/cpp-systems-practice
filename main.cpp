@@ -27,11 +27,11 @@ int main() {
     DoubleCircularBuffer altitudeBuffer;
     DoubleCircularBuffer engineCommandBuffer;
     Engine engine(engineCommandBuffer);
-    engine.SetThrottle(0.0f);
-    Rocket rocket(engine, 1008.85f, -111.211f);
+    engine.SetThrottle(0.004f);
+    Rocket rocket(engine, 1202.78f, 91.5942f);
     SensorUnit altitudeSensors("SU-10-ALT", altitudeBuffer, rocket, 0);
     SensorUnit velocitySensors("SU-10-VEL", velocityBuffer, rocket, 1);
-    FlightComputer fc(altitudeBuffer, velocityBuffer, engineCommandBuffer, LaunchSequence::MECO);
+    FlightComputer fc(altitudeBuffer, velocityBuffer, engineCommandBuffer, LaunchSequence::MAX_Q);
 
     std::thread altThread(&SensorUnit::run, &altitudeSensors);
     std::thread velThread(&SensorUnit::run, &velocitySensors);

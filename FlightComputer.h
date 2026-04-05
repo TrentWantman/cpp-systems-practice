@@ -77,9 +77,9 @@ public:
                 }
             }
             else if (ls.getState() == "MECO") {
-                if (alt <= 1000.0 && velocity < 0) {
+                if (alt <= 1400.0 && velocity < 0) {
                     ls.transition(ls.LANDING);
-                    setThrottle(0.29f);
+                    setThrottle(1.0f);
                 }
             }
             else if (ls.getState() == "LANDING") {
@@ -88,13 +88,12 @@ public:
                     setThrottle(0.0f);
                 }
                 else if (velocity < -5.0f) {
-                    setThrottle(0.95f);
+                    setThrottle(1.0f);
                 }
                 else {
-                    setThrottle(0.72f);
+                    setThrottle(0.68f);
                 }
             }
-
             auto end = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
