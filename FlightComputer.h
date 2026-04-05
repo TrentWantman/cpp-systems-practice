@@ -24,7 +24,7 @@ public:
     bool stopped = false;
 
     FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd)
-        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.01f, 0.0f, 0.0f) {}
+        : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.02f, 0.0f, 0.0f) {}
 
     FlightComputer(DoubleCircularBuffer& alt, DoubleCircularBuffer& vel, DoubleCircularBuffer& cmd, LaunchSequence::State startState)
         : altBuffer(alt), velBuffer(vel), commandBuffer(cmd), landingPID(0.02f, 0.0f, 0.0f) { 
@@ -92,18 +92,12 @@ public:
                     ls.transition(ls.SAFED);
                     setThrottle(0.0f);
                 }
-                else if (ls.getState() == "LANDING") {
-                    if (alt <= 0.0) {
-                        ls.transition(ls.SAFED);
-                        setThrottle(0.0f);
-                    }
-                    else {
-                        float targetVel = -0.05f * alt - 1.0f;
-                        float throttle = 0.7f + landingPID.Compute(targetVel, velocity, dt);
-                        if (throttle > 1.0f) throttle = 1.0f;
-                        if (throttle < 0.0f) throttle = 0.0f;                   
-                        setThrottle(throttle);
-                    }
+                else {
+                    float targetVel = -0.05f * alt - 1.0f;
+                    float throttle = 0.7f + landingPID.Compute(targetVel, velocity, dt);
+                    if (throttle > 1.0f) throttle = 1.0f;
+                    if (throttle < 0.0f) throttle = 0.0f;                   
+                    setThrottle(throttle);
                 }
             }
             auto end = std::chrono::steady_clock::now();
